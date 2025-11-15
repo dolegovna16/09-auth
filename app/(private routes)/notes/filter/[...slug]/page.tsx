@@ -8,7 +8,6 @@ import {
 } from '@tanstack/react-query';
 import { fetchNotes } from '@/lib/api/serverApi';
 import NotesClient from './Notes.client';
-
 interface NotesProps {
   params: Promise<{ slug: string[] }>;
 }
