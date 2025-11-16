@@ -1,48 +1,48 @@
-// app/notes/[id]/page.tsx
-
-import { Metadata } from 'next';
+import { fetchNoteById } from "@/lib/api/serverApi";
+import NoteDetailsClient from "./NoteDetails.client";
 import {
-  QueryClient,
-  HydrationBoundary,
   dehydrate,
-} from '@tanstack/react-query';
-import { fetchNoteById } from '@/lib/api/serverApi';
-import NoteDetailsClient from './NoteDetails.client';
+  HydrationBoundary,
+  QueryClient,
+} from "@tanstack/react-query";
+import { Metadata } from "next";
 
-interface NoteProps {
+interface NoteDetailsProps {
   params: Promise<{ id: string }>;
 }
 
 export async function generateMetadata({
   params,
-}: NoteProps): Promise<Metadata> {
+}: NoteDetailsProps): Promise<Metadata> {
   const { id } = await params;
   const note = await fetchNoteById(id);
+
   return {
-    title: `Note: ${note.title} `,
-    description: `${note.content.slice(0, 32)}`,
+    title: `Note: ${note.title}`,
+    description: `${note.content.slice(0, 60)}`,
     openGraph: {
-      title: `Note: ${note.title} `,
-      description: `${note.content.slice(0, 32)}`,
-      url: `https://notehub.com/notes/${id}`,
+      title: `Note: ${note.title}`,
+      description: `${note.content.slice(0, 60)}`,
+      url: `https://08-zustand-nine-eta.vercel.app/${id}`,
       images: [
         {
-          url: 'https://ac.goit.global/fullstack/react/notehub-og-meta.jpg',
+          url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
           width: 1200,
           height: 630,
-          alt: 'NoteHub',
+          alt: "NoteHub image",
         },
       ],
     },
   };
 }
 
-const NoteDetails = async ({ params }: NoteProps) => {
+export default async function NoteDetails({ params }: NoteDetailsProps) {
   const { id } = await params;
+
   const queryClient = new QueryClient();
 
   await queryClient.prefetchQuery({
-    queryKey: ['note', id],
+    queryKey: ["note", id],
     queryFn: () => fetchNoteById(id),
   });
 
@@ -51,6 +51,4 @@ const NoteDetails = async ({ params }: NoteProps) => {
       <NoteDetailsClient />
     </HydrationBoundary>
   );
-};
-
-export default NoteDetails;
+}
