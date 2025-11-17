@@ -1,36 +1,37 @@
-"use client";
+// app/(public routes)/sign-up/page.tsx
+'use client';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import css from './SignUpPage.module.css';
+import { register, RegistrationDetails } from '@/lib/api/clientApi';
+import { useAuthStore } from '@/lib/store/authStore';
+import { ApiError } from '@/lib/api/api';
 
-import css from "./page.module.css";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { ApiError } from "@/lib/api/api";
-import { useAuthStore } from "@/lib/store/authStore";
-import { register, RegisterRequest } from "@/lib/api/clientApi";
-import toast from "react-hot-toast";
-
-export default function SignUpPage() {
+const SignUp = () => {
   const router = useRouter();
-  const [error, setError] = useState("");
-  const setUser = useAuthStore((state) => state.setUser);
+  const [error, setError] = useState('');
+  const setUser = useAuthStore(state => state.setUser);
 
   const handleSubmit = async (formData: FormData) => {
     try {
-      const payload = Object.fromEntries(formData) as RegisterRequest;
-      const data = await register(payload);
-      if (data) {
-        setUser(data);
-        toast.success("Registration successful!");
-        router.push("/profile");
+      const formValues = Object.fromEntries(
+        formData
+      ) as unknown as RegistrationDetails;
+
+      const response = await register(formValues);
+
+      if (response) {
+        setUser(response);
+        router.push('/profile');
       } else {
-        setError("Invalid email or password");
+        setError('Invalid email or password');
       }
     } catch (error) {
       setError(
         (error as ApiError).response?.data?.error ??
           (error as ApiError).message ??
-          "Oops... some error"
+          'Oops... some error'
       );
-      toast.error("Oops... some error");
     }
   };
 
@@ -65,9 +66,10 @@ export default function SignUpPage() {
             Register
           </button>
         </div>
-
-        <p className={css.error}>{error}</p>
+        {error && <p className={css.error}>{error}</p>}
       </form>
     </main>
   );
-}
+};
+
+export default SignUp;

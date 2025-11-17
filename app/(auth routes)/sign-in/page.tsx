@@ -1,35 +1,36 @@
-"use client";
+'use client';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { login, LoginDetails } from '@/lib/api/clientApi';
+import { ApiError } from '@/lib/api/api';
+import { useAuthStore } from '@/lib/store/authStore';
+import css from './SignInPage.module.css';
 
-import css from "./page.module.css";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { ApiError } from "@/lib/api/api";
-import { useAuthStore } from "@/lib/store/authStore";
-import { login, LoginRequest } from "@/lib/api/clientApi";
-import toast from "react-hot-toast";
-
-export default function SignInPage() {
+const SignIn = () => {
   const router = useRouter();
-  const [error, setError] = useState("");
-  const setUser = useAuthStore((state) => state.setUser);
+  const [error, setError] = useState('');
+  const setUser = useAuthStore(state => state.setUser);
+
   const handleSubmit = async (formData: FormData) => {
     try {
-      const payload = Object.fromEntries(formData) as LoginRequest;
-      const data = await login(payload);
-      if (data) {
-        setUser(data);
-        toast.success("Login successful!");
-        router.push("/profile");
+      const formValues = Object.fromEntries(
+        formData
+      ) as unknown as LoginDetails;
+
+      const response = await login(formValues);
+
+      if (response) {
+        setUser(response);
+        router.push('/profile');
       } else {
-        setError("Invalid email or password");
+        setError('Invalid email or password');
       }
     } catch (error) {
       setError(
         (error as ApiError).response?.data?.error ??
           (error as ApiError).message ??
-          "Oops... some error"
+          'Oops... some error'
       );
-      toast.error("Oops... some error");
     }
   };
 
@@ -65,9 +66,10 @@ export default function SignInPage() {
             Log in
           </button>
         </div>
-
-        <p className={css.error}>{error}</p>
+        {error && <p className={css.error}>{error}</p>}
       </form>
     </main>
   );
-}
+};
+
+export default SignIn;

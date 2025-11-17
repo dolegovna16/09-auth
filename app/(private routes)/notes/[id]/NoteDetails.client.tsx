@@ -1,50 +1,44 @@
-"use client";
+'use client';
 
-import { useParams } from "next/navigation";
-import css from "./NoteDetails.module.css";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from '@tanstack/react-query';
+import { useParams, useRouter } from 'next/navigation';
+import css from './NoteDetails.module.css';
+import { fetchNoteById } from '@/lib/api/clientApi';
+import Error from './error';
 
-import Loader from "@/components/Loader/Loader";
-import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
-import { fetchNoteById } from "@/lib/api/clientApi";
-
-export default function NoteDetailsClient() {
+const NoteDetailsClient = () => {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["note", id],
+  const back = () => router.back();
+
+  const { data: note, error } = useQuery({
+    queryKey: ['note', id],
     queryFn: () => fetchNoteById(id),
     refetchOnMount: false,
   });
 
-  const formatDate = (isoDate: string) => {
-    return new Date(isoDate).toLocaleString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
+  if (error) return <Error error={error} />;
+  if (!note) return <p>Something went wrong.</p>;
 
-  if (isLoading) return <Loader />;
-
-  if (isError || !data) return <ErrorMessage />;
+  const formattedDate = note.updatedAt
+    ? `Updated at: ${note.updatedAt}`
+    : `Created at: ${note.createdAt}`;
 
   return (
-    <>
-      <div className={css.container}>
-        {data && (
-          <div className={css.item}>
-            <div className={css.header}>
-              <h2>{data.title}</h2>
-            </div>
-            <p className={css.content}>{data.content}</p>
-            <p className={css.tag}>{data.tag}</p>
-            <p className={css.date}>{formatDate(data.createdAt)}</p>
-          </div>
-        )}
+    <div className={css.container}>
+      <button onClick={back} className={css.backBtn}>
+        Back
+      </button>
+      <div className={css.item}>
+        <div className={css.header}>
+          <h2>{note.title}</h2>
+        </div>
+        <p className={css.content}>{note.content}</p>
+        <p className={css.date}>{formattedDate}</p>
       </div>
-    </>
+    </div>
   );
-}
+};
+
+export default NoteDetailsClient;

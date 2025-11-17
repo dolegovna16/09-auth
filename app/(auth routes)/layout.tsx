@@ -1,13 +1,12 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-type Props = {
+interface AuthLayoutProps {
   children: React.ReactNode;
-};
-
-export default function AuthLayout({ children }: Props) {
+}
+export default function AuthLayout({ children }: AuthLayoutProps) {
   const [loading, setLoading] = useState(true);
 
   const router = useRouter();

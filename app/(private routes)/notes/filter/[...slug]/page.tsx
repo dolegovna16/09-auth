@@ -1,55 +1,51 @@
+// app/notes/filter/[...slug]/page.tsx
+
+import { Metadata } from 'next';
 import {
-  dehydrate,
-  HydrationBoundary,
   QueryClient,
-} from "@tanstack/react-query";
+  HydrationBoundary,
+  dehydrate,
+} from '@tanstack/react-query';
+import { fetchNotes } from '@/lib/api/serverApi';
+import NotesClient from './Notes.client';
 
-import NotesClient from "./Notes.client";
-import { NoteTag } from "@/types/note";
-import { Metadata } from "next";
-import { fetchNotes } from "@/lib/api/serverApi";
-
-type NotesProps = {
+interface NotesProps {
   params: Promise<{ slug: string[] }>;
-};
+}
 
 export async function generateMetadata({
   params,
 }: NotesProps): Promise<Metadata> {
   const { slug } = await params;
-  const tag = slug[0] === "All" ? "All" : (slug[0] as NoteTag);
-
   return {
-    title: `Notes: ${tag}`,
-    description:
-      "Browse your notes, stay organized, and manage your ideas with NoteHub.",
+    title: `${slug[0][0].toUpperCase() + slug[0].slice(1)} Notes`,
+    description: `A list of ${slug[0]} notes`,
     openGraph: {
-      title: `Notes: ${tag}`,
-      description:
-        "Browse your notes, stay organized, and manage your ideas with NoteHub.",
-      url: `https://08-zustand-nine-eta.vercel.app/${tag}`,
+      title: `${slug[0][0].toUpperCase() + slug[0].slice(1)} Notes`,
+      description: `A list of ${slug[0]} notes`,
+      url: `https://notehub.com/notes/filter/${slug[0]}`,
       images: [
         {
-          url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
+          url: 'https://ac.goit.global/fullstack/react/notehub-og-meta.jpg',
           width: 1200,
           height: 630,
-          alt: "NoteHub image",
+          alt: 'NoteHub',
         },
       ],
     },
   };
 }
 
-export default async function Notes({ params }: NotesProps) {
+const Notes = async ({ params }: NotesProps) => {
   const queryClient = new QueryClient();
-
   const { slug } = await params;
-
-  const tag = slug[0] === "All" ? undefined : (slug[0] as NoteTag);
+  const tag = slug[0] === 'all' ? '' : slug[0];
+  const search = '';
+  const page = 1;
 
   await queryClient.prefetchQuery({
-    queryKey: ["notes", "", 1, tag],
-    queryFn: () => fetchNotes("", 1, tag),
+    queryKey: ['notes', tag],
+    queryFn: () => fetchNotes(search, page, tag),
   });
 
   return (
@@ -57,4 +53,6 @@ export default async function Notes({ params }: NotesProps) {
       <NotesClient tag={tag} />
     </HydrationBoundary>
   );
-}
+};
+
+export default Notes;
